@@ -1,10 +1,10 @@
 
-.links line {
-  stroke: #999;
-  stroke-opacity: 0.6;
+.chart div {
+  font: 10px sans-serif;
+  background-color: steelblue;
+  text-align: right;
+  padding: 3px;
+  margin: 1px;
+  color: white;
 }
 
-.nodes circle {
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
