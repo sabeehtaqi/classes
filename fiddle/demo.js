@@ -3,7 +3,7 @@ window.onload = ready;
 function ready() {
   var data = [4, 8, 15, 16, 23, 42];
 
-  var x = d3.scale.linear()
+  var x = d3.scaleLinear()
       .domain([0, d3.max(data)])
       .range([0, 420]);
 
