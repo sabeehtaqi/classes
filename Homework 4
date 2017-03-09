@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Earthquakes by Magnitude for last week in USA</title>
+
+<style>
+
+body {
+  position: absolute;
+  margin: 0px;
+}
+  
+svg {
+  background-color: lightblue ;
+} 
+  
+path.state {
+  fill: maroon;
+  stroke: black;
+}
+
+path.quake1, circle.quake1 {
+  fill: LimeGreen;
+  fill-opacity: 0.6;
+}
+
+path.quake2, circle.quake2 {
+  fill: Yellow;
+  fill-opacity: 0.6;
+}
+
+path.quake3, circle.quake3 {
+  fill: DarkOrange;
+  fill-opacity: 0.9;
+}  
+
+path.quake4, circle.quake4 {
+  fill: Red;
+  fill-opacity: 0.9;
+}
+  
+  
+</style>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/topojson.v2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.21.0/d3-legend.js"></script>
+
+<body>
+<script>
+
+  
+// Set SVG size
+var width = 1000, height = 800;
+  
+// Global variable for state data
+var state_data;
+
+// Global variable for USGS data
+var usgs_data;
+
+// Create SVG element
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+// Add layer one (US States) to SVG
+var layer1 = d3.select("svg").append("svg")
+    .attr("y", 100); 
+
+// Add layers (US Earthquakes) to SVG
+var layer2 = d3.select("svg").append("svg")
+      .attr("y", 100);
+var layer3 = d3.select("svg").append("svg")
+      .attr("y", 100);
+var layer4 = d3.select("svg").append("svg")
+      .attr("y", 100);
+var layer5 = d3.select("svg").append("svg")
+      .attr("y", 100);
+  
+
+// Set the map projection
+var projection = d3.geoAlbersUsa();
+
+// Set geographic path generator
+var path = d3.geoPath()
+    .pointRadius(3.5)
+    .projection(projection);
+  
+// US Basemap
+var US_Base = "https://umbcvis.github.io/classes/class-03/us.json"
+
+// USGS Real-Time Earthquake Feed
+var usgs = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+// Create an Ordinal Legend          
+var ordinal = d3.scaleOrdinal()
+  .domain(["1.0 - 2.0", "2.0 - 3.0", "3.0 - 4.0", "4.0 +"])
+  .range([ "rgb(50, 205, 50)", "rgb(255, 255, 0)", "rgb(255, 140, 0)", "rgb(255, 0, 0)"]);
+
+var svg2 = d3.select("svg").append("svg")
+  .attr("x", 825)
+  .attr("y", 450);
+
+svg2.append("g")
+  .attr("class", "legendOrdinal")
+  .attr("transform", "translate(20,20)")
+  .attr("fill", "black");
+
+var legendOrdinal = d3.legendColor()
+  .shape("path", d3.symbol().type(d3.symbolCircle).size(150)())
+  .shapePadding(10)
+  .title("Magnitude")
+  .scale(ordinal);
+
+svg.select(".legendOrdinal")
+  .call(legendOrdinal);
+  
+// Add a title using D3.js
+svg.append("text")
+  .attr("x", (width / 2))
+  .attr("y", (height / 12))
+  .attr("text-anchor", "middle")
+  .style("font-size", "30px")
+  .style("font-family", "Italic")
+  .attr("fill", "black")
+  .text("Earthquakes by Magnitude for last week in USA");    
+
+  
+// Read and plot the US States
+d3.json(US_Base, plotStates);
+function plotStates(error, json) {
+  
+  // Create array of GeoJSON features -- this defines the global variable "state_data"
+  state_data = json.objects.us.geometries.map(
+    function(d) { 
+      return topojson.feature(json, d);
+    })
+  
+  // Read and plot the US Earthquakes
+  d3.json(usgs, plotQuakes);
+  
+  function plotQuakes(error, json) {
+  
+    // Assign the json to a global variable "usgs_data"
+    usgs_data = json;
+
+    // Filter the features by magnitude
+    var features1 = usgs_data.features.filter(function(d) {
+      return (d.properties.mag >= 1.0) && (d.properties.mag < 2.0)
+    });
+    
+    var features2 = usgs_data.features.filter(function(d) {
+      return (d.properties.mag >= 2.0) && (d.properties.mag < 3.0)
+    });
+  
+    var features3 = usgs_data.features.filter(function(d) {
+      return (d.properties.mag >= 3.0) && (d.properties.mag < 4.0)
+    });
+    
+    var features4 = usgs_data.features.filter(function(d) {
+      return (d.properties.mag >= 4.0)
+    });
+    
+    
+    // Plot the earthquakes and calculate the total count
+    layer2.selectAll('path.quake1')
+        .data(features1)
+      .enter().append('path')
+        .attr("class", "quake1")
+        .attr("d", path)
+        
+    var us_bbox1 = features1.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -125.011) && (d.geometry.coordinates[0] <= -66.9326))
+             && ((d.geometry.coordinates[1] >= 24.9493) && (d.geometry.coordinates[1] <= 49.5904)))
+    });
+    
+    var ak_bbox1 = features1.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -179.1505) && (d.geometry.coordinates[0] <= -129.9795))
+             && ((d.geometry.coordinates[1] >= 51.2097) && (d.geometry.coordinates[1] <= 71.4410)))
+    });
+    
+    var hw_bbox1 = features1.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -160.2471) && (d.geometry.coordinates[0] <= -154.8066))
+             && ((d.geometry.coordinates[1] >= 18.9117) && (d.geometry.coordinates[1] <= 22.2356)))
+    });
+    
+    var sum1 = us_bbox1.length + ak_bbox1.length + hw_bbox1.length;
+   
+    layer3.selectAll("path.quake2")
+        .data(features2)
+      .enter().append("path")
+        .attr("class", "quake2")
+        .attr("d", path)
+    
+    var us_bbox2 = features2.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -125.011) && (d.geometry.coordinates[0] <= -66.9326))
+             && ((d.geometry.coordinates[1] >= 24.9493) && (d.geometry.coordinates[1] <= 49.5904)))
+    });
+    
+    var ak_bbox2 = features2.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -180) && (d.geometry.coordinates[0] <= -125.8593))
+             && ((d.geometry.coordinates[1] >= 48.3416) && (d.geometry.coordinates[1] <= 71.8014)))
+    });
+    
+    var hw_bbox2 = features2.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -160.2471) && (d.geometry.coordinates[0] <= -154.8066))
+             && ((d.geometry.coordinates[1] >= 18.9117) && (d.geometry.coordinates[1] <= 22.2356)))
+    });
+    
+    var sum2 = us_bbox2.length + ak_bbox2.length + hw_bbox2.length; 
+    
+    layer4.selectAll("path.quake3")
+        .data(features3)
+      .enter().append("path")
+        .attr("class", "quake3")
+        .attr("d", path)
+    
+    var us_bbox3 = features3.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -125.011) && (d.geometry.coordinates[0] <= -66.9326))
+             && ((d.geometry.coordinates[1] >= 24.9493) && (d.geometry.coordinates[1] <= 49.5904)))
+    });
+    
+    var ak_bbox3 = features3.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -180) && (d.geometry.coordinates[0] <= -125.8593))
+             && ((d.geometry.coordinates[1] >= 48.3416) && (d.geometry.coordinates[1] <= 71.8014)))
+    });
+    
+    var hw_bbox3 = features3.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -160.2471) && (d.geometry.coordinates[0] <= -154.8066))
+             && ((d.geometry.coordinates[1] >= 18.9117) && (d.geometry.coordinates[1] <= 22.2356)))
+    });
+    
+    var sum3 = us_bbox3.length + ak_bbox3.length + hw_bbox3.length; 
+    
+    layer5.selectAll("path.quake4")
+        .data(features4)
+      .enter().append("path")
+        .attr("class", "quake4")
+        .attr("d", path)
+    
+    var us_bbox4 = features4.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -125.011) && (d.geometry.coordinates[0] <= -66.9326))
+             && ((d.geometry.coordinates[1] >= 24.9493) && (d.geometry.coordinates[1] <= 49.5904)))
+    });
+    
+    var ak_bbox4 = features4.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -180) && (d.geometry.coordinates[0] <= -125.8593))
+             && ((d.geometry.coordinates[1] >= 48.3416) && (d.geometry.coordinates[1] <= 71.8014)))
+    });
+    
+    var hw_bbox4 = features4.filter(function(d) {
+      return (((d.geometry.coordinates[0] >= -160.2471) && (d.geometry.coordinates[0] <= -154.8066))
+             && ((d.geometry.coordinates[1] >= 18.9117) && (d.geometry.coordinates[1] <= 22.2356)))
+    });
+    
+    var sum4 = us_bbox4.length + ak_bbox4.length + hw_bbox4.length; 
+    
+    // Display the total count of earthquakes by filter
+    svg.append("text")
+      .attr("x", (width / 30))
+      .attr("y", (height - 25))
+      .style("font-size", "17px")
+      .style("font-family", "cursive")
+      .attr("fill", "black")
+      .text("Total # of Earthquakes by Magnitude: ")
+    
+    svg.append("text")
+      .attr("x", (width / 2.6))
+      .attr("y", (height - 25))
+      .style("font-size", "17px")
+      .style("font-family", "cursive")
+      .style("font-weight", "bold")
+      .attr("fill", "LimeGreen")
+      .text(sum1 + ",")
+    
+    svg.append("text")
+      .attr("x", (width / 2.4))
+      .attr("y", (height - 25))
+      .style("font-size", "17px")
+      .style("font-family", "sans-serif")
+      .style("font-weight", "bold")
+      .attr("fill", "yellow")
+      .text(sum2 + ",")
+    
+    svg.append("text")
+      .attr("x", (width / 2.2))
+      .attr("y", (height - 25))
+      .style("font-size", "17px")
+      .style("font-family", "sans-serif")
+      .style("font-weight", "bold")
+      .attr("fill", "orange")
+      .text(sum3 + ",")
+    
+    svg.append("text")
+      .attr("x", (width / 2))
+      .attr("y", (height - 25))
+      .style("font-size", "17px")
+      .style("font-family", "sans-serif")
+      .style("font-weight", "bold")
+      .attr("fill", "red")
+      .text(sum4);
+    
+  }
+  
+  // Plot the states
+  layer1.selectAll("path")
+      .data(state_data)
+    .enter()
+      .append("path")
+      .attr("class", "state")
+      .attr("d", path);
+}
+
+  
+
+</script>
